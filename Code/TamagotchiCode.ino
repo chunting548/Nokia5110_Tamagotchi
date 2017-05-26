@@ -78,16 +78,19 @@ void setup(){
 
   //小雞
   display.drawBitmap(20, 20, Chicken, 24, 24, BLACK);
+  
   Kclear(0, 20);
+  
   display.display();
   
 }
 
+void Kclear(int x, int y){ //XY等於座標
+  for(int i = y; i < 48; i++)
+    for(int j = x; j < 84; j++)
+      display.drawPixel(j, i, WHITE);
+}
+
 void loop(){
 
-}
-void Kclear(int x,int y){//XY等於座標
-  for(int i=y;i<48;i++)
-    for(int j=x;j<84;j++)
-      display.drawPixel(j, i, WHITE);
 }
