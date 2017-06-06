@@ -12,21 +12,21 @@
 
 byte count = 0;
 byte xChicken = 42;
-byte xpac_man = 0;
+byte xpac_man = 1;
 byte below_Screen = 0;
 bool chickenFlag = 0;
 bool select_Now = 0;
 bool select_Before = 0;
 bool accept_YesNow = 0;
-bool accept_YesBefor = 0;
+bool accept_YesBefore = 0;
 bool cookieFlag = 1;
+bool acceptCtrl=1; 
 
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(PIN_SCLK, PIN_SDIN, PIN_DC, PIN_SCE, PIN_RESET);
 
 //小雞 Bitmap
-static const unsigned char PROGMEM Chicken[] =
-{
+static const unsigned char PROGMEM Chicken[] ={
   B00000000, B10001000, B10000000,
   B00000000, B01001001, B00000000,
   B00000000, B00101010, B00000000,
@@ -53,8 +53,7 @@ static const unsigned char PROGMEM Chicken[] =
   B00000011, B00000000, B00110000,
   B00000011, B00000000, B00110000
 };
-static const unsigned char PROGMEM ChickenReverse[] =
-{
+static const unsigned char PROGMEM ChickenReverse[] ={
   B00000001 ,B00010001 ,B00000000,
   B00000000 ,B10010010 ,B00000000,
   B00000000 ,B01010100 ,B00000000,
@@ -116,32 +115,30 @@ void setup() {
 
 
 void loop() {
-  select_Now=digitalRead(buttonSelect);  //以兩個變數去判斷是否按下按鈕 當Now=1,Before=1則進入選項內，其餘狀況則不做任何反映    ||   需要此功能是因為Button按下後會回傳一個bool型態，會是永久1或0
-  if(select_Now==1 && select_Before==0){
-    count++;
-    if(count==4)
-      count=0;
-  }
-  select_Before=select_Now;
+  Serial.println(select_Now);
+  Serial.println(select_Before);
+  Serial.println();
   
+  selection();
   UI();
   uiChoise();//選擇(v)大便/吃飯/愛心
   
   switch(below_Screen){
     case 0 : 
-      chickenMove();//雞放UI後雞才不會不見
+      chickenMove();
       break;
     case 1 :
+      chickenMove();
       break;
     case 2 :
       feedFood();
       break;
     case 3 :
+      chickenMove();
       break;
   }  
     delay(100);
   display.display();
-
 }
 
 void chickenMove(){
@@ -161,7 +158,6 @@ void chickenMove(){
   else if(xChicken==59)
     chickenFlag=0;
 }
-
 void UI(){
   
   if (count == 0) { //未選擇
@@ -269,7 +265,6 @@ void UI(){
 
   }
 }
-
 void kClear(byte x1, byte y1, byte x2, byte y2, bool color) { //x1,y1等於起始座標 x2,y2等於終點座標 color為顏色 0=白 1=黑
   if (color == 0)
     for (byte j = y1; j < y2; j++)
@@ -282,7 +277,7 @@ void kClear(byte x1, byte y1, byte x2, byte y2, bool color) { //x1,y1等於起�
 }
 void uiChoise(){
   accept_YesNow=digitalRead(buttonAccept);
-  if(accept_YesNow == 1 && accept_YesBefor == 0){
+  if(accept_YesNow == 1 && accept_YesBefore == 0 && acceptCtrl == 1){
     if(count == 1){//大便
       below_Screen=1;
     }
@@ -291,26 +286,46 @@ void uiChoise(){
     }
     if(count == 3){//心情
       below_Screen=3;
-    }
-    accept_YesNow=accept_YesBefor;
+    }    
   }
+  accept_YesNow=accept_YesBefore;
 }
-void  feedFood(){
+void feedFood(){
   kClear(0,16,84,48,0);
   if(cookieFlag==1){
     //餅乾
     display.drawCircle(52, 32, 5, BLACK);
-    display.drawPixel(52, 32, BLACK);//x,y,colour
+    display.drawPixel(52, 32, BLACK);//x,y,color
     display.drawPixel(50, 30, BLACK);
     display.drawPixel(50, 34, BLACK);
     display.drawPixel(54, 30, BLACK);
     display.drawPixel(54, 34, BLACK);
   }
-    if(xpac_man=52)
-      cookieFlag=0;
-    kClear(xpac_man-1, 20, xpac_man + 25, 44, WHITE);
-    display.drawBitmap(xpac_man, 20, pac_man, 24, 24, BLACK);
-    xpac_man++;
-    if(xpac_man==84)
-      below_Screen=0;
+
+    if(xpac_man>38)
+      cookieFlag=0;//餅乾大於38時消失
+    else
+      cookieFlag=1;//餅乾出現
+    kClear(xpac_man-1, 20, xpac_man + 25, 44, WHITE);//小精靈出現前的覆蓋
+    display.drawBitmap(xpac_man, 20, pac_man, 24, 13, BLACK);//小精靈
+    xpac_man++;//小精靈移動
+    if(xpac_man==83){//小精靈動作結束
+      xpac_man=1;//回到原始位置
+      acceptCtrl=1;//又可以accept
+      below_Screen=0;//回到小雞移動
+    }
+    else
+      acceptCtrl=0;//控制accept不能被啟動
+}  
+void selection(){
+  select_Now=digitalRead(buttonSelect);  //以兩個變數去判斷是否按下按鈕 當Now=1,Before=1則進入選項內，其餘狀況則不做任何反映    ||   需要此功能是因為Button按下後會回傳一個bool型態，會是永久1或0
+  if(select_Now == 1 && select_Before == 0){
+    count++;
+    if(count==4)
+      count = 0;
+  }
+  select_Before = select_Now;
+}
+void poo(){
+
 }
