@@ -81,19 +81,22 @@ static const unsigned char PROGMEM ChickenReverse[] ={
   B00001100 ,B00000000 ,B11000000
 };
 static const unsigned char PROGMEM pac_man[] = { //精靈
-    B00000000, B00000000, B00000000,
-    B00000111, B01111111, B11100000, 
-    B00110000, B00000000, B00011000, 
-    B11000000, B11000000, B00000110,
-    B11000000, B11000000, B00110000, 
-    B11000000, B00000000, B11000000,
-    B11000000, B00000011, B00000000,
-    B11000000, B00000000, B11000000,
-    B11000000, B00000000, B00110000, 
-    B00110000, B00000000, B00011000,
-    B00000110, B00000000, B00110000,
-    B00000001, B11111111, B10000000,
-    B00000000, B00000000, B00000000
+  B00000000, B00000000, B00000000, B00000000,
+  B00000000, B00001111, B11111111, B00000000,
+  B00000000, B11000000, B00000000, B11000000,
+  B00000001, B00000000, B00000000, B01100000,
+  B00000110, B00111000, B00000111, B10000000,
+  B00011000, B00111000, B00110000, B00000000,
+  B00110000, B00000000, B01100000, B00000000,
+  B00110000, B00000000, B11000000, B00000000,
+  B00110000, B00000000, B01110000, B00000000,
+  B00110000, B00000000, B00001100, B00000000,
+  B00011000, B00000000, B00000001, B11111000,
+  B00000110, B00000000, B00000000, B00011000,
+  B00000001, B00000000, B00000000, B01100000,
+  B00000000, B11000000, B00000001, B11000000,
+  B00000000, B00001111, B11111111, B00000000,
+  B00000000, B00000000, B00000000, B00000000
   };
 void setup() {
 
@@ -276,56 +279,66 @@ void kClear(byte x1, byte y1, byte x2, byte y2, bool color) { //x1,y1等於起�
         display.drawPixel(i, j, BLACK);
 }
 void uiChoise(){
-  accept_YesNow=digitalRead(buttonAccept);
+  accept_YesNow = digitalRead(buttonAccept);
   if(accept_YesNow == 1 && accept_YesBefore == 0 && acceptCtrl == 1){
     if(count == 1){//大便
-      below_Screen=1;
+      below_Screen = 1;
     }
     if(count == 2){//吃飯
-      below_Screen=2;
+      below_Screen = 2;
     }
     if(count == 3){//心情
-      below_Screen=3;
+      below_Screen = 3;
     }    
   }
-  accept_YesNow=accept_YesBefore;
+  accept_YesNow = accept_YesBefore;
 }
 void feedFood(){
-  kClear(0,16,84,48,0);
-  if(cookieFlag==1){
+  kClear(0, 16, 84, 48, 0);
+  if(cookieFlag == 1){
     //餅乾
-    display.drawCircle(52, 32, 5, BLACK);
-    display.drawPixel(52, 32, BLACK);//x,y,color
+    display.drawCircle(52, 32, 5, BLACK);//x,y,color
+    display.drawPixel(52, 32, BLACK);
     display.drawPixel(50, 30, BLACK);
     display.drawPixel(50, 34, BLACK);
     display.drawPixel(54, 30, BLACK);
     display.drawPixel(54, 34, BLACK);
   }
 
-    if(xpac_man>38)
-      cookieFlag=0;//餅乾大於38時消失
+    if(xpac_man > 38)
+      cookieFlag = 0;//餅乾大於38時消失
     else
-      cookieFlag=1;//餅乾出現
+      cookieFlag = 1;//餅乾出現
+  
     kClear(xpac_man-1, 20, xpac_man + 25, 44, WHITE);//小精靈出現前的覆蓋
-    display.drawBitmap(xpac_man, 20, pac_man, 24, 13, BLACK);//小精靈
+  
+    display.drawBitmap(xpac_man, 20, pac_man, 32, 16, BLACK);//小精靈
+  
     xpac_man++;//小精靈移動
-    if(xpac_man==83){//小精靈動作結束
-      xpac_man=1;//回到原始位置
-      acceptCtrl=1;//又可以accept
-      below_Screen=0;//回到小雞移動
+  
+    if(xpac_man == 83){//小精靈動作結束
+      xpac_man = 1;//回到原始位置
+      acceptCtrl = 1;//又可以accept
+      below_Screen = 0;//回到小雞移動
     }
     else
-      acceptCtrl=0;//控制accept不能被啟動
+      acceptCtrl = 0;//控制accept不能被啟動
 }  
+
 void selection(){
-  select_Now=digitalRead(buttonSelect);  //以兩個變數去判斷是否按下按鈕 當Now=1,Before=1則進入選項內，其餘狀況則不做任何反映    ||   需要此功能是因為Button按下後會回傳一個bool型態，會是永久1或0
+  select_Now = digitalRead(buttonSelect);
+  /*
+  以兩個變數去判斷是否按下按鈕 當Now=1,Before = 1則進入選項內，其餘狀況則不做任何反映|| 
+  需要此功能是因為Button按下後會回傳一個boolean型態，會是永久1或0
+  */
   if(select_Now == 1 && select_Before == 0){
     count++;
-    if(count==4)
+    if(count == 4)
       count = 0;
   }
   select_Before = select_Now;
 }
+
 void poo(){
 
 }
