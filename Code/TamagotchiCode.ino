@@ -1,6 +1,8 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
+#include <Event.h>
+#include <Timer.h>
 
 #define PIN_SCE   7
 #define PIN_RESET 6
@@ -10,10 +12,16 @@
 #define buttonSelect 13
 #define buttonAccept 12
 
-byte count = 0;
-byte xChicken = 42;
-byte xpac_man = 1;
-byte below_Screen = 0;
+Timer mood_time;
+byte count = 0; //UI選項選擇依據
+byte xChicken = 42; //小雞x座標
+byte xpac_man = 1; //小精靈之x座標
+byte xpoo = 1; //poo之x座標
+byte below_Screen = 0; //下畫面顯示(0-4)
+byte mood = 8; //心情值
+bool hungry = 1; //飢餓參數
+bool clean = 1;//衛生參數 
+bool mood_type = 1;
 bool chickenFlag = 0;
 bool select_Now = 0;
 bool select_Before = 0;
@@ -98,6 +106,21 @@ static const unsigned char PROGMEM pac_man[] = { //精靈
   B00000000, B00001111, B11111111, B00000000,
   B00000000, B00000000, B00000000, B00000000
   };
+static const unsigned char PROGMEM poo[] = { //poo
+  B00000000, B00000000, B00000000,  
+  B00000000, B00000000, B00000000, 
+  B11111111, B00000000, B00000000, 
+  B00001011, B01000001, B10000010, 
+  B00001111, B00100010, B01000100, 
+  B00000000, B00010100, B00101000, 
+  B11111111, B00001010, B01010000, 
+  B00001011, B00010000, B00001000, 
+  B00001111, B00100000, B00000100, 
+  B00000000, B01000000, B00000010, 
+  B11111111, B11111111, B11111111, 
+  B00001011, B00000000, B00000000, 
+  B00001111, B00000000, B00000000
+  };
 void setup() {
 
   Serial.begin(9600);
@@ -105,7 +128,6 @@ void setup() {
   pinMode(buttonAccept,INPUT);
   display.begin();
   //display.setContrast(60);
-
   display.display();
   delay(2000);
 
@@ -125,19 +147,25 @@ void loop() {
   selection();
   UI();
   uiChoise();//選擇(v)大便/吃飯/愛心
+  if(hungey)
+  mood_time.every(15000,);
+
   
   switch(below_Screen){
-    case 0 : 
-      chickenMove();
+    case 0 :
+      if(hungey) 
+        chickenMove();
+      else
+        //好餓圖
       break;
     case 1 :
-      chickenMove();
+      pooCome();
       break;
     case 2 :
       feedFood();
       break;
     case 3 :
-      chickenMove();
+      mood();
       break;
   }  
     delay(100);
@@ -312,7 +340,7 @@ void feedFood(){
   
     kClear(xpac_man-1, 20, xpac_man + 25, 44, WHITE);//小精靈出現前的覆蓋
   
-    display.drawBitmap(xpac_man, 20, pac_man, 32, 16, BLACK);//小精靈
+    display.drawBitmap(xpac_man, 26, pac_man, 32, 16, BLACK);//小精靈
   
     xpac_man++;//小精靈移動
   
@@ -339,6 +367,25 @@ void selection(){
   select_Before = select_Now;
 }
 
-void poo(){
-
+void pooCome(){
+  kClear(0, 16, 84, 48, 0);
+  kClear(xpoo-1, 20, xpoo + 25, 40, WHITE);
+  display.drawBitmap(xpoo, 26, poo, 24, 13, BLACK);
+  xpoo++;
+  if(xpoo == 83){//poo動作結束
+    xpoo = 1;//回到原始位置
+    acceptCtrl = 1;//又可以accept
+    below_Screen = 0;//回到小雞移動
+  }
+  else
+    acceptCtrl = 0;//控制accept不能被啟動
+}
+void mood(){
+  
+}
+void moodChange(bool key){
+  if(key)
+    mood++;
+  else
+    mood--;
 }
