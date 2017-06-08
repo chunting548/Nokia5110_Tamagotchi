@@ -12,13 +12,15 @@
 #define buttonSelect 13
 #define buttonAccept 12
 
+Timer hungry_time;
 Timer mood_time;
+Timer poo_time;
 byte count = 0; //UI選項選擇依據
 byte xChicken = 42; //小雞x座標
 byte xpac_man = 1; //小精靈之x座標
 byte xpoo = 1; //poo之x座標
 byte below_Screen = 0; //下畫面顯示(0-4)
-byte mood = 8; //心情值
+byte mood_num = 8; //心情值
 bool hungry = 1; //飢餓參數
 bool clean = 1;//衛生參數 
 bool mood_type = 1;
@@ -106,7 +108,7 @@ static const unsigned char PROGMEM pac_man[] = { //精靈
   B00000000, B00001111, B11111111, B00000000,
   B00000000, B00000000, B00000000, B00000000
   };
-static const unsigned char PROGMEM poo[] = { //poo
+static const unsigned char PROGMEM poo[] = { 
   B00000000, B00000000, B00000000,  
   B00000000, B00000000, B00000000, 
   B11111111, B00000000, B00000000, 
@@ -121,6 +123,57 @@ static const unsigned char PROGMEM poo[] = { //poo
   B00001011, B00000000, B00000000, 
   B00001111, B00000000, B00000000
   };
+  static const unsigned char PROGMEM hungeyChicken[] = { 
+    B00000000, B00000000, B00000000, 
+    B00000000, B00000000, B00000000, 
+    B01111111, B11111111, B11000000, 
+    B01000000, B00000000, B01000000, 
+    B01000000, B00000000, B01000000, 
+    B01000000, B00000101, B01000000, 
+    B01000000, B00000010, B01000000, 
+    B01000000, B00000101, B01100000, 
+    B01000000, B00000000, B01010000, 
+    B01000000, B00000000, B01100000, 
+    B01000000, B00000000, B01001010, 
+    B01000000, B00000000, B01010101, 
+    B01000000, B00000000, B01000000, 
+    B01111111, B11111111, B11000000, 
+    B00000100, B00010000, B00000000, 
+    B00000011, B10001110, B00000000
+  };
+
+  static const unsigned char PROGMEM deadChickenUp[] = { 
+    B00000000,B00000000,B00000000, 
+    B00000000,B00000000,B00000000, 
+    B00000011,B11111111,B10000000, 
+    B00000010,B00000000,B10000000, 
+    B00000010,B01000100,B10000000, 
+    B00000010,B11101110,B10000000, 
+    B00011010,B01000100,B10110000, 
+    B00100110,B00010000,B10001000, 
+    B00010010,B00111000,B10010000, 
+    B00001110,B00000000,B11100000, 
+    B00000001,B01101101,B00000000, 
+    B00000000,B10010010,B00000000, 
+    B00000000,B00000000,B00000000, 
+    B00000000,B00000000,B00000000
+  };
+  static const unsigned char PROGMEM deadChickenDown[] = { 
+    B00000000,B00000000,B00000000, 
+    B00000000,B00000000,B00000000, 
+    B00000011,B11111111,B10000000, 
+    B00000010,B00000000,B10000000, 
+    B00000010,B01000100,B10000000, 
+    B00000010,B11101110,B10000000, 
+    B00000010,B01000100,B10000000, 
+    B00001110,B00010000,B11100000, 
+    B00010110,B00111000,B11010000, 
+    B00101010,B00000000,B10101000, 
+    B00010001,B01101101,B00010000, 
+    B00000000,B10010010,B00000000, 
+    B00000000,B00000000,B00000000, 
+    B00000000,B00000000,B00000000
+  };
 void setup() {
 
   Serial.begin(9600);
@@ -128,6 +181,7 @@ void setup() {
   pinMode(buttonAccept,INPUT);
   display.begin();
   //display.setContrast(60);
+  hungry_time.after(10000,hungry_hungry);//計時10秒後開始餓
   display.display();
   delay(2000);
 
@@ -140,23 +194,22 @@ void setup() {
 
 
 void loop() {
-  Serial.println(select_Now);
-  Serial.println(select_Before);
+  Serial.println(hungry);
   Serial.println();
+  hungry_time.update();
+  
   
   selection();
   UI();
   uiChoise();//選擇(v)大便/吃飯/愛心
-  if(hungey)
-  mood_time.every(15000,);
-
   
   switch(below_Screen){
     case 0 :
-      if(hungey) 
+      if(hungry) 
+        //deadChicken();
         chickenMove();
       else
-        //好餓圖
+        chicken_hungry_hungry();
       break;
     case 1 :
       pooCome();
@@ -165,7 +218,7 @@ void loop() {
       feedFood();
       break;
     case 3 :
-      mood();
+      octagon();
       break;
   }  
     delay(100);
@@ -309,6 +362,9 @@ void kClear(byte x1, byte y1, byte x2, byte y2, bool color) { //x1,y1等於起�
 void uiChoise(){
   accept_YesNow = digitalRead(buttonAccept);
   if(accept_YesNow == 1 && accept_YesBefore == 0 && acceptCtrl == 1){
+    if(count == 0){//雞移動
+      below_Screen = 0;
+    }
     if(count == 1){//大便
       below_Screen = 1;
     }
@@ -322,6 +378,7 @@ void uiChoise(){
   accept_YesNow = accept_YesBefore;
 }
 void feedFood(){
+
   kClear(0, 16, 84, 48, 0);
   if(cookieFlag == 1){
     //餅乾
@@ -348,6 +405,8 @@ void feedFood(){
       xpac_man = 1;//回到原始位置
       acceptCtrl = 1;//又可以accept
       below_Screen = 0;//回到小雞移動
+      hungry_time.after(10000,hungry_hungry);//完食計時10秒後開始餓
+      hungry = 1;//完食 飽
     }
     else
       acceptCtrl = 0;//控制accept不能被啟動
@@ -385,7 +444,30 @@ void mood(){
 }
 void moodChange(bool key){
   if(key)
-    mood++;
+    mood_num++;
   else
-    mood--;
+    mood_num--;
+}
+void hungry_hungry(){ //使變餓
+  hungry = 0;
+}
+void chicken_hungry_hungry(){ //餓肚子雞顯示
+  kClear(0, 16, 84, 48, 0);
+  display.drawBitmap(30, 26, hungeyChicken, 24, 16, BLACK);
+}
+void deadChicken(){
+  delay(100);
+  kClear(0, 16, 84, 48, 0);
+  display.drawBitmap(30, 26, deadChickenUp, 24, 14, BLACK);
+  display.display();
+  kClear(0, 16, 84, 48, 0);
+  display.drawBitmap(30, 26, deadChickenDown, 24, 14, BLACK);
+}
+void octagon(){ //八角形
+  kClear(0, 16, 84, 48, 0);
+  display.drawCircle(43, 31, 13, BLACK); 
+  display.drawLine(55, 36, 31, 26, BLACK); 
+  display.drawLine(55, 26, 31, 36, BLACK); 
+  display.drawLine(48, 19, 38, 43, BLACK); 
+  display.drawLine(38, 19, 48, 43, BLACK);
 }
