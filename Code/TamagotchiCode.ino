@@ -247,6 +247,7 @@ void setup() {
 }
 
 void loop() {
+  Serial.println(mood_num);
   if(mood_num!=0){
     mood_time.update();
     eating_time.update();
@@ -360,7 +361,7 @@ void UI(){
     //三角形，大便(反白)
     kClear(0, 0, 28 , 15, 1);
     display.drawTriangle(14, 3 , 7, 12, 21, 12, WHITE);
-
+    
     //圓圈+點，吃飯(餅乾)
     display.drawCircle(42, 7, 5, BLACK);
     display.drawPixel(42, 7, BLACK);
@@ -530,11 +531,11 @@ void pooCome(){ //大便沖水
 void mood(){
   if(hungry_clean_change_key()){
     if(hungry && clean && !mood_Flag) {
-      mood_time.after(10000, moodIncrease); //整潔、不餓的情況下，持續10秒後心情值+1
+      mood_time.every(10000, moodIncrease); //整潔、不餓的情況下，持續10秒後心情值+1
       mood_Flag=1;
     }
     else if( (!hungry || !clean) && mood_Flag ){
-      mood_time.after(10000, moodDecrease); //反之
+      mood_time.every(10000, moodDecrease); //反之
       mood_Flag=0;
     }
   }
@@ -632,30 +633,64 @@ void angry_chicken_hungry_dirty(){ //生氣又餓又髒的雞
 }
 
 void fill(byte num){
+    rectangle();
+    display.drawLine(12, 30, 8, 26, BLACK); //af
+    display.drawLine(8, 26, 4, 30, BLACK); //fe
+    display.drawLine(4, 30, 12, 38, BLACK); //ed
+    display.drawLine(12, 38, 20, 30, BLACK); //dc
+    display.drawLine(20, 30, 16, 26, BLACK); //cb
+    display.drawLine(16, 26, 12, 30, BLACK); //ba
   switch(num){
     case 8:
-      rectangle();
       display.fillRect(67, 30, 5, 5, 1);
-    case 7:
-      rectangle();
       display.fillRect(61, 30, 5, 5, 1);
-    case 6:
-      rectangle();
       display.fillRect(55, 30, 5, 5, 1);
-    case 5:
-      rectangle();
       display.fillRect(49, 30, 5, 5, 1);
-    case 4:
-      rectangle();
       display.fillRect(43, 30, 5, 5, 1);
-    case 3:
-      rectangle();
       display.fillRect(37, 30, 5, 5, 1);
-    case 2:
-      rectangle();
       display.fillRect(31, 30, 5, 5, 1);
+      display.fillRect(25, 30, 5, 5, 1);
+      break;
+    case 7:
+      display.fillRect(61, 30, 5, 5, 1);
+      display.fillRect(55, 30, 5, 5, 1);
+      display.fillRect(49, 30, 5, 5, 1);
+      display.fillRect(43, 30, 5, 5, 1);
+      display.fillRect(37, 30, 5, 5, 1);
+      display.fillRect(31, 30, 5, 5, 1);
+      display.fillRect(25, 30, 5, 5, 1);
+      break;
+    case 6:
+      display.fillRect(55, 30, 5, 5, 1);
+      display.fillRect(49, 30, 5, 5, 1);
+      display.fillRect(43, 30, 5, 5, 1);
+      display.fillRect(37, 30, 5, 5, 1);
+      display.fillRect(31, 30, 5, 5, 1);
+      display.fillRect(25, 30, 5, 5, 1);
+      break;
+    case 5:
+      display.fillRect(49, 30, 5, 5, 1);
+      display.fillRect(43, 30, 5, 5, 1);
+      display.fillRect(37, 30, 5, 5, 1);
+      display.fillRect(31, 30, 5, 5, 1);
+      display.fillRect(25, 30, 5, 5, 1);
+      break;
+    case 4:
+      display.fillRect(43, 30, 5, 5, 1);
+      display.fillRect(37, 30, 5, 5, 1);
+      display.fillRect(31, 30, 5, 5, 1);
+      display.fillRect(25, 30, 5, 5, 1);
+      break;
+    case 3:
+      display.fillRect(37, 30, 5, 5, 1);
+      display.fillRect(31, 30, 5, 5, 1);
+      display.fillRect(25, 30, 5, 5, 1);
+      break;
+    case 2:
+      display.fillRect(31, 30, 5, 5, 1);
+      display.fillRect(25, 30, 5, 5, 1);
+      break;
     case 1:
-      rectangle();
       display.fillRect(25, 30, 5, 5, 1);
       break;
   }
