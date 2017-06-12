@@ -579,7 +579,7 @@ void deadChicken(){ //死去的雞
   display.drawBitmap(30, 26, deadChickenDown, 24, 14, BLACK);
 }
 
-void rectangle(){ //圓餅圖骨架
+void rectangle(){ //長條圖骨架
   kClear(0, 16, 84, 48, 0); 
   display.drawRect(23, 28, 50, 9, 1);
 }
